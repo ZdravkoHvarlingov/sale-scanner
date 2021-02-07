@@ -1,12 +1,16 @@
-from salescanner.salescanner.items import SalescannerItem
+from salescanner.crawling.spiders.utils.spider_indexor import SpiderIndexor
 import scrapy
 import logging
+
 from datetime import datetime, timedelta
+from salescanner.crawling.spiders.utils.utils import Utils
+from salescanner.crawling.items import SalescannerItem
 
 
+@SpiderIndexor('bazar')
 class BazarAdsSpider(scrapy.Spider):
 
-    MAX_NUMBER_OF_PAGES = 25
+    MAX_NUMBER_OF_PAGES = 30
     name = 'bazar_sales'
 
     def __init__(self, **kwargs):
@@ -22,7 +26,6 @@ class BazarAdsSpider(scrapy.Spider):
         offers_response = response.css('.search_cont_thumb .listItemContainer > .listItemLink::attr(href)')
         offers_urls = set(offers_response.getall())
 
-        print(len(offers_urls))
         for offer_url in offers_urls:
             yield scrapy.Request(offer_url, callback=self.parse_details_page)
         self.pages_processed += 1
@@ -44,7 +47,7 @@ class BazarAdsSpider(scrapy.Spider):
         ad_item['url'] = response.url
         ad_item['title'] = title.strip() if title else title
         ad_item['price'] = price.strip() if price else price
-        ad_item['image_url'] = 'https:' + image_url if image_url.startswith('//') else image_url
+        ad_item['image_url'] = 'https:' + image_url if image_url and image_url.startswith('//') else image_url
         ad_item['description'] = description
         ad_item['upload_time'] = self.parse_upload_datetime(upload_datetime)
         yield ad_item
@@ -86,25 +89,7 @@ class BazarAdsSpider(scrapy.Spider):
 
         return datetime(
             year,
-            self.month_to_number(datetime_split[3]),
+            Utils.month_to_number(datetime_split[3]),
             int(day),
             int(hour_minute[0]),
             int(hour_minute[1]))
-
-    def month_to_number(self, month_str):
-        month_dict = {
-            'януари': 1,
-            'февруари': 2,
-            'март': 3,
-            'април': 4,
-            'май': 5,
-            'юни': 6,
-            'юли': 7,
-            'август': 8,
-            'септември': 9,
-            'октомври': 10,
-            'ноември': 11,
-            'декември': 12
-        }
-
-        return month_dict.get(month_str)

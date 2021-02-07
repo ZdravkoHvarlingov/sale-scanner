@@ -1,9 +1,13 @@
-from salescanner.salescanner.items import SalescannerItem
+from salescanner.crawling.spiders.utils.spider_indexor import SpiderIndexor
 import scrapy
 import logging
+
 from datetime import datetime
+from salescanner.crawling.spiders.utils.utils import Utils
+from salescanner.crawling.items import SalescannerItem
 
 
+@SpiderIndexor('olx')
 class OLXAdsSpider(scrapy.Spider):
 
     MAX_NUMBER_OF_PAGES = 25
@@ -23,6 +27,14 @@ class OLXAdsSpider(scrapy.Spider):
         offers_urls = set(offers_response.getall())
 
         for offer_url in offers_urls:
+            split_url = offer_url.split('/')
+            if 'job' in split_url or 'ad' not in split_url:
+                continue
+
+            if 'd' in split_url:
+                split_url.remove('d')
+                offer_url = '/'.join(split_url)
+
             yield scrapy.Request(offer_url, callback=self.parse_details_page)
         self.pages_processed += 1
 
@@ -32,6 +44,10 @@ class OLXAdsSpider(scrapy.Spider):
         
 
     def parse_details_page(self, response):
+        split_url = response.url.split('/')
+        if 'job' in split_url or 'ad' not in split_url:
+            return
+
         image_url = response.css('.descgallery__image img.bigImage::attr(src)').get()
         title = response.css('.offer-titlebox > h1::text').get()
         price = response.css('.offer-titlebox__price > .pricelabel > strong::text').get()
@@ -59,25 +75,7 @@ class OLXAdsSpider(scrapy.Spider):
 
         return datetime(
             int(date_portion[2]),
-            self.month_to_number(date_portion[1]),
+            Utils.month_to_number(date_portion[1]),
             int(date_portion[0]),
             int(time_portion[0]),
             int(time_portion[1]))
-
-    def month_to_number(self, month_str):
-        month_dict = {
-            'януари': 1,
-            'февруари': 2,
-            'март': 3,
-            'април': 4,
-            'май': 5,
-            'юни': 6,
-            'юли': 7,
-            'август': 8,
-            'септември': 9,
-            'октомври': 10,
-            'ноември': 11,
-            'декември': 12
-        }
-
-        return month_dict.get(month_str)
