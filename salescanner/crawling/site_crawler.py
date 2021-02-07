@@ -1,11 +1,11 @@
 import os
 import json
-from salescanner.services.ad_item_service import AdItemService
 import time
 import multiprocessing
 
 from scrapy.crawler import CrawlerProcess
 from salescanner.crawling.spiders import SpiderIndexor
+from salescanner.services.ad_item_service import AdItemService
 
 
 class SiteCrawler:
