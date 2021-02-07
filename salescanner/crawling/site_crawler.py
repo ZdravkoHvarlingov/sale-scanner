@@ -1,5 +1,6 @@
 import os
 import json
+from salescanner.services.ad_item_service import AdItemService
 import time
 import multiprocessing
 
@@ -9,8 +10,21 @@ from salescanner.crawling.spiders import SpiderIndexor
 
 class SiteCrawler:
 
+    INTERVAL_IN_SECONDS = 600
+
     @staticmethod
     def crawl():
+        while True:
+            try:   
+                print('Starting crawling operation...')
+                SiteCrawler._perform_crawling()
+            except:
+                print(f'Exception occurred during crawling. Retrying in {SiteCrawler.INTERVAL_IN_SECONDS} seconds')
+            finally:
+                time.sleep(SiteCrawler.INTERVAL_IN_SECONDS)
+        
+    @staticmethod
+    def _perform_crawling():
         start = time.time()
         processes = []
         for site, spider in SpiderIndexor.get_spiders():
@@ -28,9 +42,8 @@ class SiteCrawler:
         end = time.time()
 
         print(f'Crawling ended in {end - start} seconds')
-        print(f'Number of ads: {len(ads)}')
-        print(ads[0])
-    
+        AdItemService.process_new_ads(ads)
+
     @staticmethod
     def _crawl_site(site, spider):
         json_file = f'{site}_ads.json'
