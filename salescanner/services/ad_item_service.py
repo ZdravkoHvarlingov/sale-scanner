@@ -1,4 +1,3 @@
-from salescanner.model.ad_item import AdItem
 class AdItemService:
 
     @staticmethod
