@@ -1,2 +1,0 @@
-response.css('.offers')[1].css('.offer-wrapper .detailsLinkPromoted::attr(href), .offer-wrapper .detailsLink::attr(href)')
-len(response.css('.offers')[1].css('.detailsLinkPromoted::attr(href), .detailsLink::attr(href)'))
