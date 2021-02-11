@@ -15,9 +15,14 @@ class SiteCrawler:
     @staticmethod
     def crawl():
         while True:
-            print('Starting crawling operation...')
-            SiteCrawler._perform_crawling()
-            time.sleep(SiteCrawler.INTERVAL_IN_SECONDS)
+            try:
+                print('Starting crawling operation...')
+                SiteCrawler._perform_crawling()
+                time.sleep(SiteCrawler.INTERVAL_IN_SECONDS)
+            except:
+                print('Exception ocurred during crawl operation. Retrying bulk in 3 seconds because of OS slow file operations.')
+                time.sleep(3)
+                SiteCrawler._retry_bulk()
         
     @staticmethod
     def _perform_crawling():
@@ -39,6 +44,19 @@ class SiteCrawler:
 
         print(f'Crawling ended in {end - start} seconds')
         AdItemService.process_new_ads(ads)
+
+    @staticmethod
+    def _retry_bulk():
+        try:
+            ads = []
+            for site, _ in SpiderIndexor.get_spiders():
+                with open(f'{site}_ads.json') as ads_file:
+                    site_ads = json.load(ads_file)
+                ads.extend(site_ads)
+            
+            AdItemService.process_new_ads(ads)
+        except:
+            print('Could not load json files of the crawled ads. Bulk retry failed')
 
     @staticmethod
     def _crawl_site(site, spider):
