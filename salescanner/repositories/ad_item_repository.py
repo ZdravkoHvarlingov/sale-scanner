@@ -82,7 +82,22 @@ class AdItemRepository:
 		query_res = es.search(index=AdItemRepository.ADS_INDEX_NAME, body=query_template)
 		result = {
 			'took': query_res.get('took'),
-			'hits': [{ 'source': hit['_source'], 'score': hit['_score'] } for hit in query_res.get('hits', []).get('hits', [])]
+			'max_score': query_res.get('hits', {}).get('max_score'),
+			'hits': [{ 'source': hit['_source'], 'score': hit['_score'] } for hit in query_res.get('hits', {}).get('hits', [])]
 		}
 		
 		return result
+	
+	@staticmethod
+	def count_ads():
+		es = AdItemRepository._get_connection()
+		es.indices.refresh(AdItemRepository.ADS_INDEX_NAME)
+		res = es.cat.count(AdItemRepository.ADS_INDEX_NAME, params={"format": "json"})
+
+		if len(res) > 0:
+			return int(res[0]['count'])
+		return 0
+
+
+if __name__ == '__main__':
+	print(AdItemRepository.find_by_query('стоповете'))
