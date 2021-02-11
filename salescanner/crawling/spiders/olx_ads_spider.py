@@ -1,10 +1,11 @@
-from salescanner.crawling.spiders.utils.spider_indexor import SpiderIndexor
 import scrapy
 import logging
+import pytz
 
 from datetime import datetime
 from salescanner.crawling.spiders.utils.utils import Utils
 from salescanner.crawling.items import SalescannerItem
+from salescanner.crawling.spiders.utils.spider_indexor import SpiderIndexor
 
 
 @SpiderIndexor('olx')
@@ -73,9 +74,16 @@ class OLXAdsSpider(scrapy.Spider):
         time_portion = datetime_str[0].split(':')
         date_portion = datetime_str[1].strip().split(' ')
 
-        return datetime(
+        datetime_obj = datetime(
             int(date_portion[2]),
             Utils.month_to_number(date_portion[1]),
             int(date_portion[0]),
             int(time_portion[0]),
             int(time_portion[1]))
+        return self._datetime_to_timestamp(datetime_obj)
+    
+    def _datetime_to_timestamp(self, datetime_obj):
+        timezone = pytz.timezone('Europe/Sofia')
+        datetime_obj = timezone.localize(datetime_obj)
+
+        return int(datetime_obj.timestamp() * 1000)

@@ -1,10 +1,11 @@
-from salescanner.crawling.spiders.utils.spider_indexor import SpiderIndexor
+import pytz
 import scrapy
 import logging
 
 from datetime import datetime, timedelta
 from salescanner.crawling.spiders.utils.utils import Utils
 from salescanner.crawling.items import SalescannerItem
+from salescanner.crawling.spiders.utils.spider_indexor import SpiderIndexor
 
 
 @SpiderIndexor('bazar')
@@ -46,7 +47,7 @@ class BazarAdsSpider(scrapy.Spider):
         ad_item = SalescannerItem()
         ad_item['url'] = response.url
         ad_item['title'] = title.strip() if title else title
-        ad_item['price'] = price.strip() if price else price
+        ad_item['price'] = price.strip() + '.' if price else price
         ad_item['image_url'] = 'https:' + image_url if image_url and image_url.startswith('//') else image_url
         ad_item['description'] = description
         ad_item['upload_time'] = self.parse_upload_datetime(upload_datetime)
@@ -70,11 +71,13 @@ class BazarAdsSpider(scrapy.Spider):
             result_datetime -= timedelta(days=1)
         
         hour_minute = datetime_split[-2].split(':')
-        return result_datetime.replace(
+        result_datetime = result_datetime.replace(
             hour=int(hour_minute[0]),
             minute=int(hour_minute[1]),
             second=0,
             microsecond=0)
+        
+        return self._datetime_to_timestamp(result_datetime)
 
     def parse_month_datetime(self, datetime_split):
         # 'Публикувана/обновена на 04 февруари в 13:18 ч.'
@@ -87,9 +90,17 @@ class BazarAdsSpider(scrapy.Spider):
         if len(datetime_split) == 8:
             year = int(datetime_split[4][0:-2])
 
-        return datetime(
+        datetime_obj = datetime(
             year,
             Utils.month_to_number(datetime_split[3]),
             int(day),
             int(hour_minute[0]),
             int(hour_minute[1]))
+        
+        return self._datetime_to_timestamp(datetime_obj)
+
+    def _datetime_to_timestamp(self, datetime_obj):
+        timezone = pytz.timezone('Europe/Sofia')
+        datetime_obj = timezone.localize(datetime_obj)
+
+        return int(datetime_obj.timestamp() * 1000)
