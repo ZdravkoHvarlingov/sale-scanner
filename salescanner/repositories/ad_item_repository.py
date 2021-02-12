@@ -1,6 +1,9 @@
+import pytz
+
 from salescanner.repositories.ad_index_template import AdIndexTemplate
 from elasticsearch import Elasticsearch
 from elasticsearch import helpers
+from datetime import datetime, timedelta
 
 
 class AdItemRepository:
@@ -8,6 +11,7 @@ class AdItemRepository:
 	ADS_INDEX_NAME = 'ads'
 	DEFAULT_ORDER_BY_ATTRIBUTE = '_score'
 	DEFAULT_PAGE_SIZE = 20
+	DEFAULT_EXPIRATION_DAYS = 7
 
 	_es_connection = None
 
@@ -22,7 +26,31 @@ class AdItemRepository:
 		return AdItemRepository._es_connection
 	
 	@staticmethod
+	def delete_old():
+		es = AdItemRepository._get_connection()
+		index_name = AdItemRepository.ADS_INDEX_NAME
+
+		timezone = pytz.timezone('utc')
+		min_datetime = datetime.utcnow() - timedelta(days=AdItemRepository.DEFAULT_EXPIRATION_DAYS)
+		min_datetime = timezone.localize(min_datetime)
+		min_timestamp = int(min_datetime.timestamp() * 1000)
+
+		delete_query = {
+			"query": {
+				"range": {
+					"upload_time": {
+						"lt": min_timestamp
+					}
+				}
+			}
+		}
+
+		deleted = es.delete_by_query(index=index_name, body=delete_query).get('total', 0)
+		print(f'Deleted {deleted} old ads.')
+
+	@staticmethod
 	def insert_list(ad_list):
+		AdItemRepository.delete_old()
 		es = AdItemRepository._get_connection()
 		index_name = AdItemRepository.ADS_INDEX_NAME
 		
@@ -100,4 +128,6 @@ class AdItemRepository:
 
 
 if __name__ == '__main__':
-	print(AdItemRepository.find_by_query('стоповете'))
+	# print(AdItemRepository.count_ads())
+	# AdItemRepository.insert_list([])
+	AdItemRepository.delete_old()
