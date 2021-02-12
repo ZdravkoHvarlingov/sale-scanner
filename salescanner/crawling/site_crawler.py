@@ -37,7 +37,7 @@ class SiteCrawler:
         ads = []
         for site, process in processes:
             process.join()
-            with open(f'{site}_ads.json') as ads_file:
+            with open(f'ads_json/{site}_ads.json') as ads_file:
                 site_ads = json.load(ads_file)
             ads.extend(site_ads)
         end = time.time()
@@ -50,7 +50,7 @@ class SiteCrawler:
         try:
             ads = []
             for site, _ in SpiderIndexor.get_spiders():
-                with open(f'{site}_ads.json') as ads_file:
+                with open(f'ads_json/{site}_ads.json') as ads_file:
                     site_ads = json.load(ads_file)
                 ads.extend(site_ads)
             
@@ -60,7 +60,7 @@ class SiteCrawler:
 
     @staticmethod
     def _crawl_site(site, spider):
-        json_file = f'{site}_ads.json'
+        json_file = f'ads_json/{site}_ads.json'
         if os.path.isfile(json_file):
             os.remove(json_file)
 
