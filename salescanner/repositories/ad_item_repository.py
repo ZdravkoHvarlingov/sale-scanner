@@ -9,8 +9,6 @@ from datetime import datetime, timedelta
 class AdItemRepository:
 
 	ADS_INDEX_NAME = 'ads'
-	DEFAULT_ORDER_BY_ATTRIBUTE = '_score'
-	DEFAULT_PAGE_SIZE = 20
 	DEFAULT_EXPIRATION_DAYS = 7
 
 	_es_connection = None
@@ -45,6 +43,7 @@ class AdItemRepository:
 			}
 		}
 
+		print(f'Deleting ads before UTC timestamp: {min_timestamp}.')
 		deleted = es.delete_by_query(index=index_name, body=delete_query).get('total', 0)
 		print(f'Deleted {deleted} old ads.')
 
@@ -103,7 +102,7 @@ class AdItemRepository:
 		return query_template
 
 	@staticmethod
-	def find_by_query(query_string, order_attribute=DEFAULT_ORDER_BY_ATTRIBUTE, page=0, page_size=DEFAULT_PAGE_SIZE):
+	def find_by_query(query_string, order_attribute, page, page_size):
 		es = AdItemRepository._get_connection()
 
 		query_template = AdItemRepository._construct_query(query_string, order_attribute, page, page_size)
@@ -111,6 +110,7 @@ class AdItemRepository:
 		result = {
 			'took': query_res.get('took'),
 			'max_score': query_res.get('hits', {}).get('max_score'),
+			'total_count': query_res.get('hits', {}).get('total', {}).get('value', 0),
 			'hits': [{ 'source': hit['_source'], 'score': hit['_score'] } for hit in query_res.get('hits', {}).get('hits', [])]
 		}
 		
