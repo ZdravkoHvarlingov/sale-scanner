@@ -10,7 +10,7 @@ from salescanner.services.ad_item_service import AdItemService
 
 class SiteCrawler:
 
-    INTERVAL_IN_SECONDS = 300
+    INTERVAL_IN_SECONDS = 600
 
     @staticmethod
     def crawl():
