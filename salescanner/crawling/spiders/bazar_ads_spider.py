@@ -47,7 +47,7 @@ class BazarAdsSpider(scrapy.Spider):
         ad_item = SalescannerItem()
         ad_item['url'] = response.url
         ad_item['title'] = title.strip() if title else title
-        ad_item['price'] = price.strip() + '.' if price else price
+        ad_item['price'] = (price.strip() + '.') if price else price
         ad_item['image_url'] = 'https:' + image_url if image_url and image_url.startswith('//') else image_url
         ad_item['description'] = description
         ad_item['upload_time'] = self.parse_upload_datetime(upload_datetime)

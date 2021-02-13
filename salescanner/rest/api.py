@@ -1,5 +1,6 @@
 import flask
 from flask import request, jsonify
+from flask_cors import CORS, cross_origin
 from flask import json
 
 from salescanner.services.ad_item_service import AdItemService
@@ -8,10 +9,13 @@ from salescanner.services.ad_item_service import AdItemService
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
+CORS(app)
 
-@app.route('/', methods=['GET'])
+
+@app.route('/api', methods=['GET'])
 def home():
     return jsonify({'msg': 'Hello to SaleScanner!'})
+
 
 @app.route('/api/ads/list', methods=['PUT'])
 def get_ads():
@@ -28,11 +32,13 @@ def get_ads():
     ads = AdItemService.list_ads(query, order_by, page, size)
     return jsonify(ads)
 
+
 @app.route('/api/ads/count', methods=['GET'])
+@cross_origin()
 def count_ads():
     count = AdItemService.count_ads()
     return jsonify({'count': count})
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', threaded=True)
