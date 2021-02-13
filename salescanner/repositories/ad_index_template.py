@@ -35,7 +35,8 @@ class AdIndexTemplate:
                     },
                     "title": {
                         "type": "text",
-                        "analyzer": "bulgarian"
+                        "analyzer": "bulgarian",
+                        "boost": 3
                     },
                     "url": {
                         "type": "text",
