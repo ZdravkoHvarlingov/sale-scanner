@@ -49,13 +49,13 @@ class AdItemRepository:
 
 	@staticmethod
 	def insert_list(ad_list):
-		AdItemRepository.delete_old()
 		es = AdItemRepository._get_connection()
 		index_name = AdItemRepository.ADS_INDEX_NAME
 		
 		if not es.indices.exists(index_name):
 			es.indices.create(index_name, body=AdIndexTemplate.get_index_mapping())
 
+		AdItemRepository.delete_old()
 		actions = [
             {
                 "_index": index_name,
@@ -129,5 +129,5 @@ class AdItemRepository:
 
 if __name__ == '__main__':
 	# print(AdItemRepository.count_ads())
-	# AdItemRepository.insert_list([])
-	AdItemRepository.delete_old()
+	AdItemRepository.insert_list([])
+	# AdItemRepository.delete_old()
