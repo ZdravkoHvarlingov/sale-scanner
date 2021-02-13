@@ -86,7 +86,10 @@ class AdItemRepository:
 				"bool": {
 					"should": [{
 							"match": {
-								"title": query_string
+								"title": {
+									"query": query_string,
+									"boost": 4
+								}
 							}
 						},
 						{
