@@ -68,7 +68,7 @@ class AdItemRepository:
 		print(f'{len(ad_list)} ads inserted into ElasticSearch')
 
 	@staticmethod
-	def _construct_query(query_string, order_attribute, page, page_size):
+	def construct_query(query_string, order_attribute, page, page_size):
 		if order_attribute not in {'_score', 'score', 'upload_time', 'literacy'}:
 			raise ValueError("Invalid order by attribute")
 
@@ -108,7 +108,7 @@ class AdItemRepository:
 	def find_by_query(query_string, order_attribute, page, page_size):
 		es = AdItemRepository._get_connection()
 
-		query_template = AdItemRepository._construct_query(query_string, order_attribute, page, page_size)
+		query_template = AdItemRepository.construct_query(query_string, order_attribute, page, page_size)
 		query_res = es.search(index=AdItemRepository.ADS_INDEX_NAME, body=query_template)
 		result = {
 			'took': query_res.get('took'),

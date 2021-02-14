@@ -66,6 +66,7 @@ class SiteCrawler:
 
         process = CrawlerProcess({
             'FEED_FORMAT': 'json',
+            'FEED_EXPORT_ENCODING': 'utf-8',
             'FEED_URI': json_file
         })
         process.crawl(spider)
